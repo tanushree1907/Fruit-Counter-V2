@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM openshift/node:18-minimal-ubi8
 
 # Create app directory
 WORKDIR /app
