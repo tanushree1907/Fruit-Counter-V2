@@ -1,86 +1,68 @@
 # Fruit Counter V2
 
-Lightweight full-stack demo: an Express + Mongo backend and a static frontend that displays fruits, images, cart and simple auth (JWT). Designed for local development and quick prototyping.
+Lightweight full-stack demo: an Express backend (ES modules) and a static frontend that displays fruits, images and a client-side cart. Project was simplified: MongoDB and the login/register (auth) features were removed — the app now uses an in-memory fruit catalog on the backend and client-side cart persistence.
 
-## Features
-- In-memory fruit catalog (backend) with images in frontend
-- User registration & login (bcrypt + JWT)
-- Protected `/api/me` and optional cart stock decrement endpoint
-- Client-side cart with persistent localStorage
-- Graceful image fallbacks for broken URLs
+## Summary of changes
+- Removed MongoDB, Mongoose and all authentication (register/login) code.
+- Backend rewritten as an ES module (import syntax) and now serves an in-memory fruits array.
+- Frontend uses Unsplash images for fruits, has robust image fallbacks, and no auth UI (login/register removed).
+- Cart is stored in localStorage and the backend exposes a simple endpoint to decrement stock.
 
 ## Repo layout
-- `/backend` — Express server (primary file: `server.js`)
-- `/frontend` — Static UI (primary file: `index.html`)
+- `/backend` — Express server (ES module). Primary file: `server.js`
+- `/frontend` — Static UI. Primary file: `index.html`
+
+## Features
+- In-memory fruit catalog served by backend
+- Frontend displays images from Unsplash (with placeholder fallback)
+- Client-side cart persisted in localStorage
+- Endpoint to decrement fruit stock: POST /api/cart/add/:id
+- No user accounts or authentication
 
 ## Prerequisites
 - macOS (commands below assume mac terminal)
 - Node.js (v18+ recommended) and npm
-- MongoDB (local or remote) — optional for running auth & users
 
 ## Quick start (mac)
-1. Start MongoDB (if using local):
-   - If installed via Homebrew:
-     - brew services start mongodb-community@6.0
-2. Start backend:
-   - Open terminal and run:
-     - cd /Users/rubhamsoni/Desktop/Fruit-Counter-V2/backend
-     - npm install
-     - Create a `.env` (see example below)
-     - node server.js
+1. Start backend:
+   - cd /Users/rubhamsoni/Desktop/Fruit-Counter-V2/backend
+   - npm install
+   - node server.js
    - Backend default: http://localhost:4000
 
-3. Open frontend:
-   - The frontend is a static `index.html`. For best results serve it with a static server:
-     - cd /Users/rubhamsoni/Desktop/Fruit-Counter-V2/frontend
-     - npx http-server -c-1 3000
-     - open http://localhost:3000
-   - Or simply open the file in your browser: open index.html
+2. Serve frontend (recommended) or open directly:
+   - cd /Users/rubhamsoni/Desktop/Fruit-Counter-V2/frontend
+   - npx http-server -c-1 3000
+   - open http://localhost:3000
+   - (Or open the file in your browser: open index.html)
 
-## .env example (backend)
-Create `/backend/.env` with:
-```env
-MONGO_URI=mongodb://127.0.0.1:27017/fruitcounter
-PORT=4000
-JWT_SECRET=change_this_secret
-```
-
-## API (examples)
+## API
 - GET /api/fruits
-  - Returns fruits array
-  - curl: curl http://localhost:4000/api/fruits
-
-- POST /api/register
-  - Body: { "name": "...", "email": "...", "password": "..." }
-  - curl:
-    curl -X POST http://localhost:4000/api/register -H "Content-Type: application/json" -d '{"email":"a@a.com","password":"pass"}'
-
-- POST /api/login
-  - Body: { "email": "...", "password": "..." }
-  - Response contains `token` and `user`
-
-- GET /api/me
-  - Header: Authorization: Bearer <token>
+  - Returns the current fruits array (id, name, price, stock).
+  - Example: curl http://localhost:4000/api/fruits
 
 - POST /api/cart/add/:id
-  - Decrements in-memory stock for given fruit id (optionally protected with token)
+  - Decrements in-memory stock for the given fruit id (no auth).
+  - Body: none
+  - Example: curl -X POST http://localhost:4000/api/cart/add/3
 
-## Images
-- Frontend uses direct URLs (Wikimedia Commons / reliable sources) and a placeholder fallback (`via.placeholder.com`) when an image fails to load.
+## Frontend notes
+- index.html attaches Unsplash images to fruit names (source.unsplash.com) and uses a placeholder when images fail to load.
+- The frontend maintains a local DEFAULT_FRUITS fallback for instant UI while fetching /api/fruits.
+- Cart state is persisted in localStorage (no server-side user/cart persistence).
 
-## Updating fruits
-- Edit the `fruits` array in `/backend/server.js` to add/remove/update fruit entries (id, name, price, stock).
-- Frontend fetches `/api/fruits` on load; it also uses a local DEFAULT_FRUITS fallback for instant UI.
+## Environment
+- The backend only needs an optional PORT environment variable.
+- No MongoDB or JWT secrets are required anymore.
 
 ## Troubleshooting
-- Mongo connection errors: verify `MONGO_URI` and that Mongo is running.
-- CORS: backend already enables CORS.
-- Images not appearing: check network access to the external image URLs; broken remote URLs will be replaced by placeholder images in the UI.
+- If the frontend shows stale stock, refresh the page to fetch the latest /api/fruits.
+- If images do not load, the app will show a placeholder image.
+- If backend endpoints return errors, check backend console where server.js is running.
 
 ## Development notes
-- Backend uses Mongoose, bcrypt, jsonwebtoken.
-- Frontend is plain HTML/CSS/JS — easy to port into frameworks.
-- For quick iterations, use `nodemon` in backend: `npx nodemon server.js`
+- Backend: plain Express (ES modules). Simple in-memory data — good for prototyping and tests.
+- Frontend: plain HTML/CSS/JS — easy to convert to frameworks or add features like search/filtering.
 
 ## License
 MIT — adapt and reuse.
